@@ -317,8 +317,97 @@ void gbBackspace(GapBuffer *gb)
 {
     if (gb->preSize > 0)
     {
+        // FOR TESTING
+        gb->buffer[gb->preSize] = 'A';
         gb->preSize--;
     }
+}
+
+void gbGetCursor(GapBuffer *gb, int *cy, int *cx, int cols)
+{
+    int lineCount = 0;
+    int colCount = 0;
+    for (int i = 0; i < gb->preSize; i++)
+    {
+        if (gb->buffer[i] == '\n')
+        {
+            lineCount++;
+            colCount = 0;
+        }
+        else
+        {
+            colCount++;
+            if (colCount >= cols)
+            {
+                colCount = 0;
+                lineCount++;
+            }
+        }
+    }
+
+    *cy = lineCount;
+    *cx = colCount;
+}
+
+GapBuffer *gbCreateFromFile(char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        return NULL;
+    }
+
+    int res = fseek(file, 0, SEEK_END);
+    if (res != 0)
+    {
+        return NULL;
+    }
+    int fsize = ftell(file);    // TODO: Error check
+    rewind(file);
+
+    // Not +1 because we don't care about the null terminator
+    char *string = malloc(fsize);
+    int numRead = fread(string, 1, fsize, file);
+    if (numRead != fsize)
+    {
+        return NULL;
+    }
+
+    GapBuffer *newgb = gbCreateFromString(string, fsize);
+    
+    free(string);
+    fclose(file);
+
+    return newgb;
+}
+
+void gbWriteToFile(GapBuffer *gb, char *filename)
+{
+    FILE *file = fopen(filename, "w");
+    if (file == NULL)
+    {
+        return;
+    }
+
+    // TODO: We should implement this in a more efficient way, i.e. shouldn't
+    // be writing each character individually.
+    for (int i = 0; i < gb->preSize; i++) 
+    {
+        fprintf(file, "%c", gb->buffer[i]);
+    }
+
+    // Print end buffer
+    int endBufferStart = gb->bufferSize - gb->postSize;
+    for (int i = endBufferStart; i < gb->bufferSize; i++) 
+    {
+        fprintf(file, "%c", gb->buffer[i]);
+    }
+}
+
+void gbFree(GapBuffer *gb)
+{
+    free(gb->buffer);
+    free(gb);
 }
 
 #endif
