@@ -43,6 +43,7 @@ void twLoadFile(char *filename)
         if (tw.filename != NULL)
             free(tw.filename);
         tw.filename = filename;
+
         if (tw.gb == NULL)
             gbFree(tw.gb);
         tw.gb = newgb;
@@ -131,6 +132,11 @@ void twUpdate()
                 tw.shouldSave = 1;
             }
         }
+        else if (optChar == 111)
+        {
+            tw.waitingForFilename = 1;
+            tw.shouldOpen = 1;
+        }
         break;
     case '\t':
         gbInsertString(gb, "    ", 4);
@@ -175,6 +181,8 @@ void twReceiveFilename(char *filename)
     {
         twLoadFile(tw.filename);
         tw.shouldOpen = 0;
+        twDraw();
+        wmove(tw.win, tw.cy, tw.cx);
     }
 
     tw.waitingForFilename = 0;
