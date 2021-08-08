@@ -404,6 +404,20 @@ void gbWriteToFile(GapBuffer *gb, char *filename)
     }
 }
 
+char *gbGetString(GapBuffer *gb)
+{
+    size_t newStringSize = gb->preSize + gb->postSize;
+    char *string = malloc(sizeof(char) * newStringSize + 1);
+
+    int endBufferStart = gb->bufferSize - gb->postSize;
+    memcpy(string, gb->buffer, gb->preSize);
+    memcpy(string + gb->preSize, gb->buffer + endBufferStart, gb->postSize);
+    
+    string[newStringSize] = '\0';
+    
+    return string;
+}
+
 void gbFree(GapBuffer *gb)
 {
     free(gb->buffer);

@@ -27,14 +27,32 @@ int main()
     getmaxyx(stdscr, NUM_LINES, NUM_COLS);
     
     twInit(NUM_LINES - 1, NUM_COLS, 0, 0);
-    twLoadFile("test.txt");
+    // twLoadFile("test.txt");
     twDraw();
 
     iwInit(1, NUM_COLS, NUM_LINES - 1, 0);
 
-    while (!iw.shouldExit)
+    while (!tw.shouldExit)
     {
-        iwUpdate();
+        if (!tw.waitingForFilename)
+        {
+            twUpdate();
+        }
+        else
+        {
+            iwUpdate();
+            if (iw.shouldExit)
+            {
+                tw.waitingForFilename = 0;
+                iw.shouldExit = 0;
+            }
+            else if (iw.filenameReady)
+            {
+                char *filename = gbGetString(iw.gb);
+                twReceiveFilename(filename);
+                iw.filenameReady = 0;
+            }
+        }
     }
 
     twDelete();

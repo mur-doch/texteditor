@@ -5,15 +5,16 @@
 
 #include "ncurses.h"
 #include "gapbuffer.h"
-// #include "texteditwindow.h"
 
 typedef struct 
 {
     WINDOW *win;
     int cx, cy;
     int lines, cols;
-    int shouldExit;
     GapBuffer *gb;
+    
+    // FLAGS
+    int shouldExit, filenameReady;
 } InfoWindow;
 
 InfoWindow iw;
@@ -26,6 +27,7 @@ void iwInit(int lines, int cols, int cy, int cx)
     iw.lines = lines;
     iw.cols = cols;
     iw.shouldExit = 0;
+    iw.filenameReady = 0;
     iw.gb = gbCreateEmpty();
 }
 
@@ -87,12 +89,14 @@ void iwUpdate()
     case KEY_ENTER:
         // TODO: SHOULD SUBMIT
         // gbInsertCharacter(gb, '\n');
-        shouldRedraw = 1;
+        // shouldRedraw = 1;
+        iw.filenameReady = 1;
         break;
     case 10:
         // TODO: SHOULD SUBMIT
         // gbInsertCharacter(gb, '\n');
-        shouldRedraw = 1;
+        // shouldRedraw = 1;
+        iw.filenameReady = 1;
         break;
     case 27:
         // TODO: Treat as escape character and exit the info window

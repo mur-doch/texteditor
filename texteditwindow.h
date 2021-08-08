@@ -11,8 +11,13 @@ typedef struct
     WINDOW *win;
     int cx, cy;
     int lines, cols;
-    int shouldExit;
     GapBuffer *gb;
+    char *filename;
+
+    // FLAGS
+    int shouldExit, waitingForFilename;
+    // Flags for handling new filenames
+    int shouldOpen, shouldSave;
 } TextWindow;
 
 TextWindow tw;
@@ -25,7 +30,9 @@ void twInit(int lines, int cols, int cy, int cx)
     tw.lines = lines;
     tw.cols = cols;
     tw.shouldExit = 0;
+    tw.waitingForFilename = 0;
     tw.gb = gbCreateEmpty();
+    tw.filename = NULL;
 }
 
 void twLoadFile(char *filename)
@@ -33,6 +40,9 @@ void twLoadFile(char *filename)
     GapBuffer *newgb = gbCreateFromFile(filename);
     if (newgb != NULL)
     {
+        if (tw.filename != NULL)
+            free(tw.filename);
+        tw.filename = filename;
         if (tw.gb == NULL)
             gbFree(tw.gb);
         tw.gb = newgb;
@@ -110,7 +120,16 @@ void twUpdate()
         }
         else if (optChar == 115)
         {
-            gbWriteToFile(gb, "test2.txt");
+            if (tw.filename != NULL)
+            {
+                // gbWriteToFile(gb, "test2.txt");
+                gbWriteToFile(gb, tw.filename);
+            }
+            else
+            {
+                tw.waitingForFilename = 1;
+                tw.shouldSave = 1;
+            }
         }
         break;
     case '\t':
@@ -139,6 +158,26 @@ void twUpdate()
         gbGetCursor(gb, &tw.cy, &tw.cx, tw.cols);
         wmove(tw.win, tw.cy, tw.cx);
     }
+}
+
+void twReceiveFilename(char *filename)
+{
+    if (tw.filename != NULL)
+        free(tw.filename);
+    tw.filename = filename;
+
+    if (tw.shouldSave)
+    {
+        gbWriteToFile(tw.gb, tw.filename);
+        tw.shouldSave = 0;
+    }
+    else if (tw.shouldOpen)
+    {
+        twLoadFile(tw.filename);
+        tw.shouldOpen = 0;
+    }
+
+    tw.waitingForFilename = 0;
 }
 
 void twDelete()
