@@ -132,6 +132,11 @@ void twUpdate()
                 tw.shouldSave = 1;
             }
         }
+        else if (optChar == 83)
+        {
+            tw.waitingForFilename = 1;
+            tw.shouldSave = 1;
+        }
         else if (optChar == 111)
         {
             tw.waitingForFilename = 1;
@@ -168,18 +173,18 @@ void twUpdate()
 
 void twReceiveFilename(char *filename)
 {
-    if (tw.filename != NULL)
-        free(tw.filename);
-    tw.filename = filename;
 
     if (tw.shouldSave)
     {
+        if (tw.filename != NULL)
+            free(tw.filename);
+        tw.filename = filename;
         gbWriteToFile(tw.gb, tw.filename);
         tw.shouldSave = 0;
     }
     else if (tw.shouldOpen)
     {
-        twLoadFile(tw.filename);
+        twLoadFile(filename);
         tw.shouldOpen = 0;
         twDraw();
         wmove(tw.win, tw.cy, tw.cx);
