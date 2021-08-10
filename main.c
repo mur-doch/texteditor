@@ -56,5 +56,6 @@ int main()
     }
 
     twDelete();
+    iwDelete();
     endwin();
 }

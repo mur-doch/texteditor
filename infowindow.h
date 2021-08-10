@@ -22,6 +22,7 @@ InfoWindow iw;
 void iwInit(int lines, int cols, int cy, int cx)
 {
     iw.win = newwin(lines, cols, cy, cx);
+    keypad(iw.win, TRUE);
     iw.cx = cx;
     iw.cy = cy;
     iw.lines = lines;
@@ -68,12 +69,6 @@ void iwUpdate()
     case KEY_RIGHT:
         gbMoveGapRight(gb);
         break;
-    // case KEY_UP:
-    //     gbMoveGapUp(gb);
-    //     break;
-    // case KEY_DOWN:
-    //     gbMoveGapDown(gb);
-    //     break;
     case KEY_BACKSPACE:
         gbBackspace(gb);
         shouldRedraw = 1;
@@ -87,34 +82,14 @@ void iwUpdate()
         shouldRedraw = 1;
         break;
     case KEY_ENTER:
-        // TODO: SHOULD SUBMIT
-        // gbInsertCharacter(gb, '\n');
-        // shouldRedraw = 1;
         iw.filenameReady = 1;
         break;
     case 10:
-        // TODO: SHOULD SUBMIT
-        // gbInsertCharacter(gb, '\n');
-        // shouldRedraw = 1;
         iw.filenameReady = 1;
         break;
     case 27:
-        // TODO: Treat as escape character and exit the info window
         iw.shouldExit = 1;
-        // optChar = wgetch(win);
-        // if (optChar == 120)
-        // {
-        //     iw.shouldExit = 1;
-        // }
-        // else if (optChar == 115)
-        // {
-        //     gbWriteToFile(gb, "test2.txt");
-        // }
         break;
-    // case '\t':
-    //     gbInsertString(gb, "    ", 4);
-    //     shouldRedraw = 1;
-    //     break;
     default:
         if (isprint(ch))
         {

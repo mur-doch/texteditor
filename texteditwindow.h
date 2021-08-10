@@ -25,6 +25,7 @@ TextWindow tw;
 void twInit(int lines, int cols, int cy, int cx)
 {
     tw.win = newwin(lines, cols, cy, cx);
+    keypad(tw.win, TRUE);
     tw.cx = cx;
     tw.cy = cy;
     tw.lines = lines;
