@@ -1,62 +1,62 @@
 #include "linehandler.h"
 
-size_t lbIndex;
-GapBuffer *lbGapBuffer;
-int lbHasPastPreBuf;
+size_t lhIndex;
+GapBuffer *lhGapBuffer;
+int lhHasPastPreBuf;
 
-size_t lbInit(GapBuffer *gb, int line)
+size_t lhInit(GapBuffer *gb, int line)
 {
     // TODO: Handle lines other than 0
-    lbIndex = 0;
-    lbGapBuffer = gb;
-    lbHasPastPreBuf = 0;
-    return lbIndex;
+    lhIndex = 0;
+    lhGapBuffer = gb;
+    lhHasPastPreBuf = 0;
+    return lhIndex;
 }
 
-size_t lbGetNextLineLength()
+size_t lhGetNextLineLength()
 {
-    int tempPastPreBuf = lbHasPastPreBuf;
-    size_t startIndex = lbIndex;
-    size_t gapSize = lbGapBuffer->bufferSize - (lbGapBuffer->preSize + lbGapBuffer->postSize);
+    int tempPastPreBuf = lhHasPastPreBuf;
+    size_t startIndex = lhIndex;
+    size_t gapSize = lhGapBuffer->bufferSize - (lhGapBuffer->preSize + lhGapBuffer->postSize);
 
     // Check to make sure that we're not at the end
     // If we're in the preBuf, we'll just make sure we're < preSize, and if 
     // not, that we have some room in postSize
-    if (!lbHasPastPreBuf && (startIndex >= lbGapBuffer->preSize && lbGapBuffer->postSize <= 0))
+    if (!lhHasPastPreBuf && (startIndex >= lhGapBuffer->preSize && lhGapBuffer->postSize <= 0))
     {
         return 0;
     }
-    else if (lbHasPastPreBuf && startIndex - gapSize >= lbGapBuffer->postSize)
+    else if (lhHasPastPreBuf && startIndex - gapSize >= lhGapBuffer->postSize)
     {
         return 0;
     }
 
     while (1)
     {
-        if (lbIndex >= lbGapBuffer->bufferSize)
+        if (lhIndex >= lhGapBuffer->bufferSize)
         {
             break;
         }
         
-        if (lbGapBuffer->buffer[lbIndex] == '\n')
+        if (lhGapBuffer->buffer[lhIndex] == '\n')
         {
-            lbIndex++;
+            lhIndex++;
             break;
         }
 
-        lbIndex++;
-        if (!lbHasPastPreBuf && lbIndex >= lbGapBuffer->preSize)
+        lhIndex++;
+        if (!lhHasPastPreBuf && lhIndex >= lhGapBuffer->preSize)
         {
-            lbHasPastPreBuf = 1;
-            // size_t gapSize = lbGapBuffer->bufferSize - (lbGapBuffer->preSize + lbGapBuffer->postSize);
-            lbIndex += gapSize;
+            lhHasPastPreBuf = 1;
+            // size_t gapSize = lhGapBuffer->bufferSize - (lhGapBuffer->preSize + lhGapBuffer->postSize);
+            lhIndex += gapSize;
         }
     }
 
-    int length = lbIndex - startIndex;
-    if (lbHasPastPreBuf && !tempPastPreBuf)
+    int length = lhIndex - startIndex;
+    if (lhHasPastPreBuf && !tempPastPreBuf)
     {
-        length = (lbIndex - gapSize) - startIndex;
+        length = (lhIndex - gapSize) - startIndex;
     }
     return length;
 }

@@ -58,9 +58,9 @@ void twDrawLines()
     wclear(tw.win);
     wmove(tw.win, 0, 0);
 
-    int i = lbInit(tw.gb, tw.lineOffset);
-    int hasPastPreBuf = lbHasPastPreBuf;
-    size_t length = lbGetNextLineLength();
+    int i = lhInit(tw.gb, tw.lineOffset);
+    int hasPastPreBuf = lhHasPastPreBuf;
+    size_t length = lhGetNextLineLength();
     int numLinesLeft = tw.lines;
     while (numLinesLeft > 0 && length != 0)
     {
@@ -98,7 +98,7 @@ void twDrawLines()
         }
 
         // numLinesLeft--;
-        length = lbGetNextLineLength();
+        length = lhGetNextLineLength();
     }
     // wrefresh(tw.win);
 }

@@ -3,11 +3,11 @@
 
 #include "gapbuffer.h"
 
-extern size_t lbIndex;
-extern GapBuffer *lbGapBuffer;
-extern int lbHasPastPreBuf;
+extern size_t lhIndex;
+extern GapBuffer *lhGapBuffer;
+extern int lhHasPastPreBuf;
 
-size_t lbInit(GapBuffer *gb, int line);
-size_t lbGetNextLineLength();
+size_t lhInit(GapBuffer *gb, int line);
+size_t lhGetNextLineLength();
 
 #endif
