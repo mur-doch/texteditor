@@ -59,47 +59,68 @@ void twDrawLines()
     wmove(tw.win, 0, 0);
 
     int i = lhInit(tw.gb, tw.lineOffset);
-    int hasPastPreBuf = lhHasPastPreBuf;
-    size_t length = lhGetNextLineLength();
-    int numLinesLeft = tw.lines;
-    while (numLinesLeft > 0 && length != 0)
+    int linesLeft = tw.lines;
+    char *line; 
+    size_t lineLen;
+    while (linesLeft > 0 && (line = lhGetNextLine(&lineLen)) != 0)
     {
-        // linesUsed THIS line
-        // int linesUsed = 1;
-        int linesNeeded = length / tw.cols + 1;     // floor result
-        if (numLinesLeft - linesNeeded < 0)
+        int linesNeeded = lineLen / tw.cols + 1;
+        if (linesNeeded > linesLeft)
         {
             waddstr(tw.win, "@");
-            numLinesLeft--;
-            while (numLinesLeft > 0)
+            linesLeft--;
+            while (linesLeft > 0)
             {
                 waddstr(tw.win, "\n@");
-                numLinesLeft--;
+                linesLeft--;
             }
-            continue;
         }
-        numLinesLeft -= linesNeeded;
-
-        int endIndex = i + length;
-        for (; i < endIndex; i++)
-        {
-            if (!hasPastPreBuf && i >= tw.gb->preSize)
-            {
-                hasPastPreBuf = 1;
-                size_t gapSize = tw.gb->bufferSize - (tw.gb->preSize + tw.gb->postSize);
-                i += gapSize;
-            }
-            waddch(tw.win, tw.gb->buffer[i]);
-            // if (i > tw.cols * linesUsed)
-            // {
-            //     linesUsed++;
-            //     numLinesLeft--;
-            // }
-        }
-
-        // numLinesLeft--;
-        length = lhGetNextLineLength();
+        linesLeft -= linesNeeded;
+        
+        waddstr(tw.win, line);
     }
+
+    // int hasPastPreBuf = lhHasPastPreBuf;
+    // size_t length = lhGetNextLineLength();
+    // int numLinesLeft = tw.lines;
+    // while (numLinesLeft > 0 && length != 0)
+    // {
+    //     // linesUsed THIS line
+    //     // int linesUsed = 1;
+    //     int linesNeeded = length / tw.cols + 1;     // floor result
+    //     if (numLinesLeft - linesNeeded < 0)
+    //     {
+    //         waddstr(tw.win, "@");
+    //         numLinesLeft--;
+    //         while (numLinesLeft > 0)
+    //         {
+    //             waddstr(tw.win, "\n@");
+    //             numLinesLeft--;
+    //         }
+    //         continue;
+    //     }
+    //     numLinesLeft -= linesNeeded;
+
+    //     int endIndex = i + length;
+    //     for (; i < endIndex; i++)
+    //     {
+    //         if (!hasPastPreBuf && i >= tw.gb->preSize)
+    //         {
+    //             hasPastPreBuf = 1;
+    //             size_t gapSize = tw.gb->bufferSize - (tw.gb->preSize + tw.gb->postSize);
+    //             i += gapSize;
+    //         }
+    //         waddch(tw.win, tw.gb->buffer[i]);
+    //         // if (i > tw.cols * linesUsed)
+    //         // {
+    //         //     linesUsed++;
+    //         //     numLinesLeft--;
+    //         // }
+    //     }
+
+    //     // numLinesLeft--;
+    //     length = lhGetNextLineLength();
+    // }
     // wrefresh(tw.win);
 }
 
