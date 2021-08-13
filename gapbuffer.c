@@ -314,9 +314,11 @@ void gbWriteToFile(GapBuffer *gb, char *filename)
 
     // TODO: We should implement this in a more efficient way, i.e. shouldn't
     // be writing each character individually.
+    char lastWritten = '\0';
     for (int i = 0; i < gb->preSize; i++) 
     {
         fprintf(file, "%c", gb->buffer[i]);
+        lastWritten = gb->buffer[i];
     }
 
     // Print end buffer
@@ -324,6 +326,13 @@ void gbWriteToFile(GapBuffer *gb, char *filename)
     for (int i = endBufferStart; i < gb->bufferSize; i++) 
     {
         fprintf(file, "%c", gb->buffer[i]);
+        lastWritten = gb->buffer[i];
+    }
+
+    // If last character was not a newline
+    if (lastWritten != '\n')
+    {
+        fprintf(file, "%c", '\n');
     }
 }
 

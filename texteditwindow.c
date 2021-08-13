@@ -61,12 +61,6 @@ void twDrawLines()
     wclear(tw.win);
     wmove(tw.win, 0, 0);
 
-    // TODO: DELETE; for debugging
-    int gc, gl;
-    gbGetCursor(tw.gb, &gl, &gc, tw.cols);
-    // wprintw(tw.win, "%d", gl);
-    wprintw(tw.win, "%d", tw.lineOffset);
-
     int i = lhInit(tw.gb, tw.lineOffset);
     int linesLeft = tw.lines;
     char *line; 
@@ -178,7 +172,6 @@ void twUpdate()
         {
             if (tw.filename != NULL)
             {
-                // gbWriteToFile(gb, "test2.txt");
                 gbWriteToFile(gb, tw.filename);
             }
             else
@@ -253,9 +246,6 @@ void twUpdate()
         // twDraw();
         twDrawLines();
         // Move cursor back to where it was before draw
-        // gbGetCursor(gb, &tw.cy, &tw.cx, tw.cols);
-        // wmove(tw.win, tw.cy, tw.cx);
-        // twUpdateCursor();
         twDrawCursor();
         wrefresh(tw.win);
     }
