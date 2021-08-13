@@ -6,6 +6,8 @@ void twInit(int lines, int cols, int cy, int cx)
 {
     tw.win = newwin(lines, cols, cy, cx);
     keypad(tw.win, TRUE);
+    tw.wx = cx;
+    tw.wy = cy;
     tw.cx = cx;
     tw.cy = cy;
     tw.lines = lines;
@@ -58,6 +60,12 @@ void twDrawLines()
     wclear(tw.win);
     wmove(tw.win, 0, 0);
 
+    // TODO: DELETE; for debugging
+    int gc, gl;
+    gbGetCursor(tw.gb, &gl, &gc, tw.cols);
+    // wprintw(tw.win, "%d", gl);
+    wprintw(tw.win, "%d", tw.lineOffset);
+
     int i = lhInit(tw.gb, tw.lineOffset);
     int linesLeft = tw.lines;
     char *line; 
@@ -76,52 +84,84 @@ void twDrawLines()
             }
         }
         linesLeft -= linesNeeded;
-        
+
         waddstr(tw.win, line);
     }
+}
 
-    // int hasPastPreBuf = lhHasPastPreBuf;
-    // size_t length = lhGetNextLineLength();
-    // int numLinesLeft = tw.lines;
-    // while (numLinesLeft > 0 && length != 0)
+void twDrawCursor()
+{
+    // The wx,wy might be unnecessary 
+    tw.wx = tw.cx;
+    tw.wy = tw.cy;
+    tw.wy -= tw.lineOffset;
+    if (tw.wy < 0 || tw.wy >= tw.lines)
+    {
+        curs_set(0);
+    }
+    else
+    {
+        curs_set(1);
+    }
+
+    wmove(tw.win, tw.wy, tw.wx);
+}
+
+void twUpdateCursor()
+{
+    int prevX = tw.cx;
+    int prevY = tw.cy;
+    gbGetCursor(tw.gb, &tw.cy, &tw.cx, tw.cols);
+
+    int relY = tw.cy - tw.lineOffset;
+    if (relY < 0)
+    {
+        tw.lineOffset += relY;
+    }
+    else if (relY > tw.lines - 1)
+    {
+        tw.lineOffset += relY - (tw.lines - 1);
+    }
+
+    // See if we moved up down
+    // and if the new spot is offscreen
+    // if (prevY != tw.cy && (tw.cy - tw.lineOffset < 0 || tw.cy - tw.lineOffset >= tw.lines))
     // {
-    //     // linesUsed THIS line
-    //     // int linesUsed = 1;
-    //     int linesNeeded = length / tw.cols + 1;     // floor result
-    //     if (numLinesLeft - linesNeeded < 0)
-    //     {
-    //         waddstr(tw.win, "@");
-    //         numLinesLeft--;
-    //         while (numLinesLeft > 0)
-    //         {
-    //             waddstr(tw.win, "\n@");
-    //             numLinesLeft--;
-    //         }
-    //         continue;
-    //     }
-    //     numLinesLeft -= linesNeeded;
-
-    //     int endIndex = i + length;
-    //     for (; i < endIndex; i++)
-    //     {
-    //         if (!hasPastPreBuf && i >= tw.gb->preSize)
-    //         {
-    //             hasPastPreBuf = 1;
-    //             size_t gapSize = tw.gb->bufferSize - (tw.gb->preSize + tw.gb->postSize);
-    //             i += gapSize;
-    //         }
-    //         waddch(tw.win, tw.gb->buffer[i]);
-    //         // if (i > tw.cols * linesUsed)
-    //         // {
-    //         //     linesUsed++;
-    //         //     numLinesLeft--;
-    //         // }
-    //     }
-
-    //     // numLinesLeft--;
-    //     length = lhGetNextLineLength();
+    //     tw.lineOffset += tw.cy - prevY;
     // }
-    // wrefresh(tw.win);
+
+    // NOTE: We don't need to draw the cursor since we trigger a redraw when 
+    // the cursor is updated
+    // twDrawCursor();
+
+    // If the cursor has moved with the gap offscreen, we'll check and adjust offset.
+    // First let's check if the new y is too low on the screen; >tw.lines.
+    // if (tw.cy > tw.lines + tw.lineOffset)
+    // if (tw.cy - tw.lineOffset > tw.lines)
+    // {
+    //     // tw.cy is the actual line number in the gap buffer
+    //     // tw.cy - tw.lineOffset gives us the relative position of that line
+    //     // on the screen
+    //     // If that relative position is greater than the number of lines we can
+    //     // display on, then we need to move the screen down the number of lines
+    //     // to make it displayable
+    //     // This should be the relative line - the last displayble line
+    //     // tw.lineOffset += tw.cy - tw.lines - 1;
+    //     tw.lineOffset += (tw.cy - tw.lineOffset) - (tw.lines - 1);
+    //     tw.cy = tw.lines - 1;
+    // }
+    // Check if the new y is too high on the screen
+    // else if (tw.cy - tw.lineOffset < 0)
+    // {
+    //     // tw.cy is the actual line in the gap buffer
+    //     // Subtracting tw.lineOffset should give us the relative position of 
+    //     // that line on the screen
+    //     // For example, if we've scrolled down two lines, and the gap buffer is on line 0
+    //     // Then the relative pos of that line is -2
+    //     // In that case, we need to move tw.lineOffset two up 
+    //     tw.lineOffset += tw.cy - tw.lineOffset;
+    //     tw.cy = 0;
+    // } 
 }
 
 void twUpdate()
@@ -195,6 +235,14 @@ void twUpdate()
             tw.waitingForFilename = 1;
             tw.shouldOpen = 1;
         }
+        else if (optChar == 'k')
+        {
+            tw.lineOffset--;
+        }
+        else if (optChar == 'j')
+        {
+            tw.lineOffset++;
+        }
         break;
     case '\t':
         gbInsertString(gb, "    ", 4);
@@ -211,8 +259,8 @@ void twUpdate()
 
     if (shouldMoveCursor)
     {
-        gbGetCursor(gb, &tw.cy, &tw.cx, tw.cols);
-        wmove(tw.win, tw.cy, tw.cx);
+        twUpdateCursor();
+        shouldRedraw = 1;
     }
 
     if (shouldRedraw)
@@ -220,8 +268,10 @@ void twUpdate()
         // twDraw();
         twDrawLines();
         // Move cursor back to where it was before draw
-        gbGetCursor(gb, &tw.cy, &tw.cx, tw.cols);
-        wmove(tw.win, tw.cy, tw.cx);
+        // gbGetCursor(gb, &tw.cy, &tw.cx, tw.cols);
+        // wmove(tw.win, tw.cy, tw.cx);
+        // twUpdateCursor();
+        twDrawCursor();
         wrefresh(tw.win);
     }
 }

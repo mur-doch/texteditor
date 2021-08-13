@@ -8,12 +8,40 @@ size_t lhStrLen = 0;
 
 size_t lhInit(GapBuffer *gb, int line)
 {
-    // TODO: Handle lines other than 0
     lhIndex = 0;
     lhGapBuffer = gb;
     lhHasPastPreBuf = 0;
 
-    // TODO:  This is new
+    if (line > 0)
+    {
+        size_t gapSize = lhGapBuffer->bufferSize - (lhGapBuffer->preSize + lhGapBuffer->postSize);
+        while (line > 0)
+        {
+            if (lhIndex >= lhGapBuffer->bufferSize)
+            {
+                // TODO: Probably don't want to break here
+                break;
+            }
+
+            // We need to check this before accessing any characters. 
+            if (!lhHasPastPreBuf && lhIndex >= lhGapBuffer->preSize)
+            {
+                lhHasPastPreBuf = 1;
+                // size_t gapSize = lhGapBuffer->bufferSize - (lhGapBuffer->preSize + lhGapBuffer->postSize);
+                lhIndex += gapSize;
+            }
+
+            if (lhGapBuffer->buffer[lhIndex] == '\n')
+            {
+                // lhStr[strIndex++] = '\n';
+                line--;
+                lhIndex++;
+                continue;
+            }
+            lhIndex++;
+        }
+    }
+
     if (lhStrLen < gb->bufferSize + 1)
     {
         if (lhStr != NULL)

@@ -11,6 +11,7 @@
 typedef struct 
 {
     WINDOW *win;
+    int wx, wy; // used for drawing
     int cx, cy;
     int lines, cols;
     int lineOffset;
@@ -29,6 +30,7 @@ void twInit(int lines, int cols, int cy, int cx);
 void twLoadFile(char *);
 void twDraw();
 void twDrawLines();
+void twUpdateCursor();
 void twUpdate();
 void twReceiveFilename(char *filename);
 void twDelete();
