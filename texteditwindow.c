@@ -32,6 +32,7 @@ void twLoadFile(char *filename)
             gbFree(tw.gb);
         tw.gb = newgb;
         gbGetCursor(tw.gb, &tw.cy, &tw.cx, tw.cols);
+        tw.lineOffset = 0;
     }
 }
 
@@ -91,7 +92,7 @@ void twDrawLines()
 
 void twDrawCursor()
 {
-    // The wx,wy might be unnecessary 
+    // TODO: The wx,wy might be unnecessary 
     tw.wx = tw.cx;
     tw.wy = tw.cy;
     tw.wy -= tw.lineOffset;
@@ -113,6 +114,7 @@ void twUpdateCursor()
     int prevY = tw.cy;
     gbGetCursor(tw.gb, &tw.cy, &tw.cx, tw.cols);
 
+    // If the cursor is offscreen, shift the lineOffset to put it on screen
     int relY = tw.cy - tw.lineOffset;
     if (relY < 0)
     {
@@ -122,46 +124,6 @@ void twUpdateCursor()
     {
         tw.lineOffset += relY - (tw.lines - 1);
     }
-
-    // See if we moved up down
-    // and if the new spot is offscreen
-    // if (prevY != tw.cy && (tw.cy - tw.lineOffset < 0 || tw.cy - tw.lineOffset >= tw.lines))
-    // {
-    //     tw.lineOffset += tw.cy - prevY;
-    // }
-
-    // NOTE: We don't need to draw the cursor since we trigger a redraw when 
-    // the cursor is updated
-    // twDrawCursor();
-
-    // If the cursor has moved with the gap offscreen, we'll check and adjust offset.
-    // First let's check if the new y is too low on the screen; >tw.lines.
-    // if (tw.cy > tw.lines + tw.lineOffset)
-    // if (tw.cy - tw.lineOffset > tw.lines)
-    // {
-    //     // tw.cy is the actual line number in the gap buffer
-    //     // tw.cy - tw.lineOffset gives us the relative position of that line
-    //     // on the screen
-    //     // If that relative position is greater than the number of lines we can
-    //     // display on, then we need to move the screen down the number of lines
-    //     // to make it displayable
-    //     // This should be the relative line - the last displayble line
-    //     // tw.lineOffset += tw.cy - tw.lines - 1;
-    //     tw.lineOffset += (tw.cy - tw.lineOffset) - (tw.lines - 1);
-    //     tw.cy = tw.lines - 1;
-    // }
-    // Check if the new y is too high on the screen
-    // else if (tw.cy - tw.lineOffset < 0)
-    // {
-    //     // tw.cy is the actual line in the gap buffer
-    //     // Subtracting tw.lineOffset should give us the relative position of 
-    //     // that line on the screen
-    //     // For example, if we've scrolled down two lines, and the gap buffer is on line 0
-    //     // Then the relative pos of that line is -2
-    //     // In that case, we need to move tw.lineOffset two up 
-    //     tw.lineOffset += tw.cy - tw.lineOffset;
-    //     tw.cy = 0;
-    // } 
 }
 
 void twUpdate()
@@ -237,11 +199,31 @@ void twUpdate()
         }
         else if (optChar == 'k')
         {
+            if (tw.lineOffset <= 0)
+                break;
             tw.lineOffset--;
+            // If this has made the cursor offscreen, move the cursor up
+            int relY = tw.cy - tw.lineOffset;
+            // if (relY < 0)
+            if (relY > tw.lines - 1)
+            {
+                gbMoveGapUp(tw.gb);
+            }
         }
         else if (optChar == 'j')
         {
+            // TODO: This shouldn't be based on the number of lines on the 
+            // screen, but the number of lines in the file.
+            // if (tw.lineOffset >= tw.lines - 1)
+            //     break;
             tw.lineOffset++;
+            // If this has made the cursor offscreen, move the cursor down
+            int relY = tw.cy - tw.lineOffset;
+            // if (relY > tw.lines - 1)
+            if (relY < 0)
+            {
+                gbMoveGapDown(tw.gb);
+            }
         }
         break;
     case '\t':
@@ -254,7 +236,10 @@ void twUpdate()
             gbInsertCharacter(gb, ch);
             shouldRedraw = 1;
         }
-        shouldMoveCursor = 0;
+        else
+        {
+            shouldMoveCursor = 0;
+        }
     }
 
     if (shouldMoveCursor)
