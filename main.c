@@ -20,13 +20,17 @@ void initncurses()
     // initColours();
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     initncurses();
     getmaxyx(stdscr, NUM_LINES, NUM_COLS);
     
     twInit(NUM_LINES - 1, NUM_COLS, 0, 0);
-    // twLoadFile("test.txt");
+    if (argc > 1)
+    {
+        twLoadFile(argv[1]);
+    }
+    // twDrawLines();
     twDraw();
 
     iwInit(1, NUM_COLS, NUM_LINES - 1, 0);

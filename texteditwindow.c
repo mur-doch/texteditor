@@ -36,24 +36,48 @@ void twLoadFile(char *filename)
     }
 }
 
+void twDrawCursor()
+{
+    // TODO: The wx,wy might be unnecessary 
+    tw.wx = tw.cx;
+    tw.wy = tw.cy;
+    tw.wy -= tw.lineOffset;
+    if (tw.wy < 0 || tw.wy >= tw.lines)
+    {
+        curs_set(0);
+    }
+    else
+    {
+        curs_set(1);
+    }
+
+    wmove(tw.win, tw.wy, tw.wx);
+}
+
 void twDraw()
 {
-    GapBuffer *gb = tw.gb;
-    WINDOW *win = tw.win;
+    // GapBuffer *gb = tw.gb;
+    // WINDOW *win = tw.win;
 
-    wclear(win);
-    wmove(win, 0, 0);
-    for (int i = 0; i < gb->preSize; i++) 
-    {
-        waddch(win, gb->buffer[i]);
-    }
+    // wclear(win);
+    // wmove(win, 0, 0);
+    // for (int i = 0; i < gb->preSize; i++) 
+    // {
+    //     waddch(win, gb->buffer[i]);
+    // }
 
-    int endBufferStart = gb->bufferSize - gb->postSize;
-    for (int i = endBufferStart; i < gb->bufferSize; i++) 
-    {
-        waddch(win, gb->buffer[i]);
-    }
-    wrefresh(win);
+    // int endBufferStart = gb->bufferSize - gb->postSize;
+    // for (int i = endBufferStart; i < gb->bufferSize; i++) 
+    // {
+    //     waddch(win, gb->buffer[i]);
+    // }
+    // wrefresh(win);
+
+
+    twDrawLines();
+    // wmove(tw.win, tw.cy, tw.cx);
+    twDrawCursor();
+    wrefresh(tw.win);
 }
 
 void twDrawLines()
@@ -82,24 +106,6 @@ void twDrawLines()
 
         waddstr(tw.win, line);
     }
-}
-
-void twDrawCursor()
-{
-    // TODO: The wx,wy might be unnecessary 
-    tw.wx = tw.cx;
-    tw.wy = tw.cy;
-    tw.wy -= tw.lineOffset;
-    if (tw.wy < 0 || tw.wy >= tw.lines)
-    {
-        curs_set(0);
-    }
-    else
-    {
-        curs_set(1);
-    }
-
-    wmove(tw.win, tw.wy, tw.wx);
 }
 
 void twUpdateCursor()
@@ -244,10 +250,11 @@ void twUpdate()
     if (shouldRedraw)
     {
         // twDraw();
-        twDrawLines();
-        // Move cursor back to where it was before draw
-        twDrawCursor();
-        wrefresh(tw.win);
+        // twDrawLines();
+        // // Move cursor back to where it was before draw
+        // twDrawCursor();
+        // wrefresh(tw.win);
+        twDraw();
     }
 }
 
@@ -265,10 +272,7 @@ void twReceiveFilename(char *filename)
     {
         twLoadFile(filename);
         tw.shouldOpen = 0;
-        // twDraw();
-        twDrawLines();
-        wmove(tw.win, tw.cy, tw.cx);
-        wrefresh(tw.win);
+        twDraw();
     }
 
     tw.waitingForFilename = 0;
