@@ -272,7 +272,6 @@ void twReceiveFilename(char *filename)
     {
         twLoadFile(filename);
         tw.shouldOpen = 0;
-        twDraw();
     }
 
     tw.waitingForFilename = 0;

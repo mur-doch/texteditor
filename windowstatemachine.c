@@ -46,6 +46,7 @@ void wsmChangeState(enum State newState)
                 iw.filenameReady = 0;
             }
             wsm.state = TEXT_WINDOW_STATE;
+            twDraw();
             break;
         }
         case INFO_WINDOW_STATE: {
@@ -56,8 +57,8 @@ void wsmChangeState(enum State newState)
             }
             else if (tw.shouldSave)
             {
-                iw.prompt = "File to save: ";
-                iw.promptLen = 14;
+                iw.prompt = "File to save to: ";
+                iw.promptLen = 17;
             }
             wsm.state = INFO_WINDOW_STATE;
             iwDraw();
