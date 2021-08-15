@@ -10,6 +10,8 @@ void iwInit(int lines, int cols, int cy, int cx)
     iw.cy = cy;
     iw.lines = lines;
     iw.cols = cols;
+    iw.prompt = "Filename: ";
+    iw.promptLen = 10;
     iw.shouldExit = 0;
     iw.filenameReady = 0;
     iw.gb = gbCreateEmpty();
@@ -22,6 +24,8 @@ void iwDraw()
 
     wclear(win);
     wmove(win, 0, 0);
+    waddstr(win, iw.prompt);
+
     for (int i = 0; i < gb->preSize; i++) 
     {
         waddch(win, gb->buffer[i]);
@@ -85,7 +89,7 @@ void iwUpdate()
     if (shouldMoveCursor)
     {
         gbGetCursor(gb, &iw.cy, &iw.cx, iw.cols);
-        wmove(iw.win, iw.cy, iw.cx);
+        wmove(iw.win, iw.cy, iw.cx + iw.promptLen);
     }
 
     if (shouldRedraw)
@@ -93,7 +97,7 @@ void iwUpdate()
         iwDraw();
         // Move cursor back to where it was before draw
         gbGetCursor(gb, &iw.cy, &iw.cx, iw.cols);
-        wmove(iw.win, iw.cy, iw.cx);
+        wmove(iw.win, iw.cy, iw.cx + iw.promptLen);
     }
 }
 

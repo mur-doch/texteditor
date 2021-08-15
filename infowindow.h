@@ -12,6 +12,8 @@ typedef struct
     int cx, cy;
     int lines, cols;
     GapBuffer *gb;
+    char *prompt;
+    size_t promptLen;
     
     // FLAGS
     int shouldExit, filenameReady;
